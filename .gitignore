@@ -1,0 +1,31 @@
+# Node modules (both frontend and backend)
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Environment variables
+.env
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Build output (if any)
+dist/
+build/
+
+# Netlify deploy folder (if generated)
+.netlify/
+
+# VSCode settings
+.vscode/
+
+# Optional: ignore coverage reports
+coverage/
+
+# Optional: ignore local database
+*.local
