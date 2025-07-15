@@ -24,4 +24,11 @@ router.put('/update-link', async (req, res) => {
   res.sendStatus(200);
 });
 
+// Public endpoint to get currentLink for a username
+router.get('/public-link/:username', async (req, res) => {
+  const user = await User.findOne({ username: req.params.username });
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  res.json({ currentLink: user.currentLink });
+});
+
 module.exports = router;
