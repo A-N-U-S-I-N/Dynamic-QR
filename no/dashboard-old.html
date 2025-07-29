@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h2>Dashboard</h2>
+    <p>Welcome, <span id="username"></span>!</p>
+    <p>Your public QR page: 
+      <a href="/YOUR_USERNAME" target="_blank" id="publicPageUrl"></a>
+    </p>
+    <div id="qrcode"></div>
+    <p>
+      <label>Width: <input type="number" id="qrWidth" value="200" min="100" max="1000"></label>
+      <label>Height: <input type="number" id="qrHeight" value="200" min="100" max="1000"></label>
+      <button id="downloadQR">Download QR as PNG</button>
+    </p>
+    <p>Current Link: <span id="currentLink"></span></p>
+    <form id="linkForm">
+      <input type="url" id="newLink" placeholder="Enter new link" required>
+      <button type="submit">Update Link</button>
+    </form>
+    <h3>Link History</h3>
+    <ul id="linkHistory"></ul>
+    <a href="/auth/logout">Logout</a>
+    <button id="deleteAccount" style="background:#d9534f;color:white;">Delete Account</button>
+  </div>
+  <script src="js/script.js"></script>
+</body>
+</html>

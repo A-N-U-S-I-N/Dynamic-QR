@@ -35,12 +35,16 @@ document.addEventListener('DOMContentLoaded', function() {
       .then(res => res.json())
       .then(user => {
         document.getElementById('username').innerText = user.username;
-        document.getElementById('publicPageUrl').href = '/' + user.username;
-        document.getElementById('publicPageUrl').innerText = window.location.origin + '/' + user.username;
+        document.getElementById('publicPageUrlLink').href = '/' + user.username;
+        document.getElementById('publicPageUrl').value = window.location.origin + '/' + user.username;
         // QR code encodes the public page URL, not the current link!
         generateQR('qrcode', window.location.origin + '/' + user.username);
-        document.getElementById('currentLink').innerText = user.currentLink;
-        let history = user.linkHistory.map(h => `<li>${h.link} (${new Date(h.createdAt).toLocaleString()})</li>`).join('');
+        document.getElementById('currentLink').value = user.currentLink;
+        let history = user.linkHistory.map(h => `<tr>
+<td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">(${new Date(h.createdAt).toLocaleDateString()})</td>
+<td class="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">${h.link}</td>
+<td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">1,234</td>
+</tr>`);
         document.getElementById('linkHistory').innerHTML = history;
       });
 
