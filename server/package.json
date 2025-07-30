@@ -2,11 +2,7 @@
     "name": "qr-backend",
     "version": "1.0.0",
     "main": "server.js",
-<<<<<<< HEAD
-    
-=======
     "type": "commonjs",
->>>>>>> 8d0d85b2b0d5b013f5db13640b8d22525a54f096
     "scripts": {
         "start": "node server.js"
     },
