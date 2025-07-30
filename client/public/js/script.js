@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
     qrImg.src = URL.createObjectURL(qrImageBlob);
 
     // Also save for downloads
-    canvas.className = "qr-final-canvas";
+    canvas.className = "qr-final-canvas rounded";
   }
 
   // Core QR rendering function
