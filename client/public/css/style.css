@@ -3,6 +3,7 @@ body {
     background: #f7f7f7;
     margin: 0;
     padding: 0;
+    color: black;
   }
   .container {
     max-width: 400px;
@@ -12,25 +13,21 @@ body {
     border-radius: 8px;
     box-shadow: 0 0 10px #ccc;
   }
-  /* input, button {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-  }
-  #qrcode {
-    margin: 20px auto;
-    text-align: center;
-  }
-  ul {
-    list-style: none;
-    padding: 0;
-  }
-  li {
-    background: #eee;
-    margin: 5px 0;
-    padding: 8px;
-    border-radius: 4px;
-  } */
+  
+  /* Dark mode styles */
+body.dark {
+  background: black;
+  color: #eee;
+}
+
+body.dark nav {
+  background: black;
+}
+
+body.dark .container {
+  background: black;
+  box-shadow: 0 0 10px white;
+}
 
 :where([class^="ri-"])::before { content: "\f3c2"; }
 .switch {
@@ -97,14 +94,21 @@ padding: 10px;
 ::-webkit-scrollbar {
 width: 6px;
 }
-::-webkit-scrollbar-track {
+::-webkit-scrollbar-track, .hide-scrollbar::-webkit-scrollbar-track {
 background: #f1f1f1;
 }
-::-webkit-scrollbar-thumb {
+::-webkit-scrollbar-thumb, .hide-scrollbar::-webkit-scrollbar-thumb {
 background: #888;
 border-radius: 3px;
 }
-::-webkit-scrollbar-thumb:hover {
+::-webkit-scrollbar-thumb:hover, .hide-scrollbar::-webkit-scrollbar-thumb:hover {
 background: #555;
 }
+
+.hide-scrollbar::-webkit-scrollbar {
+  width:6px;
+  height: 6px;
+}
+
+
   

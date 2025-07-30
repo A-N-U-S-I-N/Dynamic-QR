@@ -1,21 +1,217 @@
-// QRCode library: https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js
+document.addEventListener('DOMContentLoaded', () => {
+  // Grab all customization inputs/buttons by id
+  const colorInput = document.getElementById('qrColor');
+  const shapeSelect = document.getElementById('qrShape');
+  const titleInput = document.getElementById('qrTitle');
+  const uploadBtn = document.getElementById('uploadLogoBtn');
+  const qrContainer = document.getElementById('qrcode');
+  const downloadBtn = document.getElementById('downloadQR');
 
-function generateQR(targetId, text, width = 200, height = 200) {
-  const container = document.getElementById(targetId);
-  container.innerHTML = '';
-  new QRCode(container, {
-    text,
-    width,
-    height
+  let qrCode = null;
+  let logoDataUrl = null;
+  let qrData = "";
+
+  // Helper: Render QR on custom canvas with title on top
+  function renderQRCodeWithTitle(qrImageBlob) {
+    const qrSize = 200;
+    const titleHeight = titleInput.value.trim() !== "" ? 28 : 0;
+    const canvas = document.createElement('canvas');
+    canvas.width = qrSize;
+    canvas.height = qrSize + titleHeight;
+    const ctx = canvas.getContext('2d');
+    // White background
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Title text
+    if (titleHeight > 0) {
+      ctx.fillStyle = '#111';
+      ctx.font = 'bold 18px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.fillText(titleInput.value.trim(), canvas.width / 2, 10);
+    }
+
+    // Draw QR image after it loads
+    const qrImg = new window.Image();
+    qrImg.onload = () => {
+      ctx.drawImage(qrImg, 0, titleHeight, qrSize, qrSize);
+      qrContainer.appendChild(canvas);
+    };
+    qrImg.src = URL.createObjectURL(qrImageBlob);
+
+    // Also save for downloads
+    canvas.className = "qr-final-canvas";
+  }
+
+  // Core QR rendering function
+  function renderQRCode() {
+    qrContainer.innerHTML = '';
+
+    const shapeMap = {
+      'Square': 'square',
+      'Rounded': 'rounded',
+      'Dots': 'dots',
+      'Extra-Rounded': 'extra-rounded',
+      'Classy-Rounded': 'classy-rounded',
+    };
+    const selectedShape = shapeMap[shapeSelect.value] || 'square';
+
+    qrCode = new QRCodeStyling({
+      width: 200,
+      height: 200,
+      data: qrData,
+      image: logoDataUrl,
+      dotsOptions: {
+        color: colorInput.value,
+        type: selectedShape,
+      },
+      backgroundOptions: {
+        color: '#ffffff',
+      },
+      imageOptions: {
+        crossOrigin: 'anonymous',
+        margin: 5,
+        imageSize: 0.2,
+        hideBehindDots: true,
+      },
+      cornersSquareOptions: {
+        color: colorInput.value,
+        type: selectedShape,
+      },
+      cornersDotOptions: {
+        color: colorInput.value,
+        type: selectedShape,
+      },
+    });
+
+    // Render QR code as image, then draw with title onto custom canvas
+    qrCode.getRawData('png').then(renderQRCodeWithTitle);
+  }
+
+  // User data and link logic
+  if (document.getElementById('linkForm')) {
+    fetch('/qr/user')
+      .then(res => res.json())
+      .then(user => {
+        qrData = window.location.origin + '/' + user.username;
+
+        if (document.getElementById('username')) document.getElementById('username').innerText = user.username;
+        if (document.getElementById('publicPageUrlLink')) document.getElementById('publicPageUrlLink').href = '/' + user.username;
+        if (document.getElementById('publicPageUrl')) document.getElementById('publicPageUrl').value = qrData;
+        if (document.getElementById('currentLink')) document.getElementById('currentLink').value = user.currentLink || qrData;
+
+        // Initial QR render
+        renderQRCode();
+
+        colorInput.addEventListener('input', renderQRCode);
+        shapeSelect.addEventListener('change', renderQRCode);
+        titleInput.addEventListener('input', renderQRCode);
+
+        uploadBtn.addEventListener('click', () => {
+          const fileInput = document.createElement('input');
+          fileInput.type = 'file';
+          fileInput.accept = 'image/*';
+          fileInput.click();
+
+          fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+              logoDataUrl = evt.target.result;
+              renderQRCode();
+            };
+            reader.readAsDataURL(file);
+          });
+        });
+
+        if (downloadBtn) {
+          downloadBtn.addEventListener('click', () => {
+            // Download custom canvas (includes title)
+            const qrCanvas = qrContainer.querySelector('canvas.qr-final-canvas');
+            if (qrCanvas) {
+              const url = qrCanvas.toDataURL("image/png");
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = (titleInput.value.trim() || 'qr_code') + '.png';
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+            }
+          });
+        }
+
+        // Link history table
+        if (user.linkHistory && Array.isArray(user.linkHistory)) {
+          const historyRows = user.linkHistory.map(h => `<tr>
+            <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">${new Date(h.createdAt).toLocaleDateString()}</td>
+            <td class="px-6 py-4 text-sm text-gray-900 whitespace-nowrap dark:text-gray-500">${h.link}</td>
+            <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">1,234</td>
+          </tr>`);
+          const historyTableBody = document.getElementById('linkHistory');
+          if (historyTableBody) historyTableBody.innerHTML = historyRows.join('');
+        }
+
+        // Link form submit
+        const linkForm = document.getElementById('linkForm');
+        if (linkForm) {
+          linkForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const newLink = document.getElementById('newLink').value;
+            fetch('/qr/update-link', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ newLink }),
+            }).then(() => window.location.reload());
+          });
+        }
+
+        // Delete account
+        const deleteBtn = document.getElementById('deleteAccount');
+        if (deleteBtn) {
+          deleteBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+              fetch('/auth/delete', { method: 'DELETE' }).then(res => {
+                if (res.ok) {
+                  alert('Account deleted.');
+                  window.location.href = '/';
+                } else {
+                  alert('Error deleting account.');
+                }
+              });
+            }
+          });
+        }
+      });
+  }
+
+  const themeToggle = document.getElementById('themeToggle');
+  const body = document.body;
+
+  // Load saved theme from localStorage if present
+  if (localStorage.getItem('theme') === 'dark') {
+    body.classList.add('dark');
+    themeToggle.checked = true;
+  }
+
+  themeToggle.addEventListener('change', () => {
+    if (themeToggle.checked) {
+      body.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      body.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
   });
-}
 
-document.addEventListener('DOMContentLoaded', function() {
-  // For login/signup password visibility toggle
+
+
+  // Password visibility toggle
   const togglePassword = document.getElementById('togglePassword');
   const passwordInput = document.getElementById('password');
   if (togglePassword && passwordInput) {
-    togglePassword.addEventListener('click', function() {
+    togglePassword.addEventListener('click', () => {
       if (passwordInput.type === "password") {
         passwordInput.type = "text";
         togglePassword.textContent = "Hide";
@@ -27,74 +223,27 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-// Dashboard logic
-document.addEventListener('DOMContentLoaded', function() {
-  // Dashboard page logic
-  if (document.getElementById('linkForm')) {
-    fetch('/qr/user')
-      .then(res => res.json())
-      .then(user => {
-        document.getElementById('username').innerText = user.username;
-        document.getElementById('publicPageUrlLink').href = '/' + user.username;
-        document.getElementById('publicPageUrl').value = window.location.origin + '/' + user.username;
-        // QR code encodes the public page URL, not the current link!
-        generateQR('qrcode', window.location.origin + '/' + user.username);
-        document.getElementById('currentLink').value = user.currentLink;
-        let history = user.linkHistory.map(h => `<tr>
-<td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">(${new Date(h.createdAt).toLocaleDateString()})</td>
-<td class="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">${h.link}</td>
-<td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">1,234</td>
-</tr>`);
-        document.getElementById('linkHistory').innerHTML = history;
-      });
-
-    document.getElementById('linkForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      let newLink = document.getElementById('newLink').value;
-      fetch('/qr/update-link', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ newLink })
-      }).then(() => window.location.reload());
-    });
-
-    if (document.getElementById('deleteAccount')) {
-  document.getElementById('deleteAccount').addEventListener('click', function() {
-    if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-      fetch('/auth/delete', { method: 'DELETE' })
-        .then(res => {
-          if (res.ok) {
-            alert('Account deleted.');
-            window.location.href = '/';
-          } else {
-            alert('Error deleting account.');
-          }
-        });
-    }
-  });
-}
-
-    // Download QR functionality
-    document.getElementById('downloadQR').addEventListener('click', function() {
-      const width = parseInt(document.getElementById('qrWidth').value) || 200;
-      const height = parseInt(document.getElementById('qrHeight').value) || 200;
-      fetch('/qr/user')
-        .then(res => res.json())
-        .then(user => {
-          // Regenerate QR with custom size for the public page URL
-          generateQR('qrcode', window.location.origin + '/' + user.username, width, height);
-          setTimeout(() => {
-            const qrCanvas = document.querySelector('#qrcode canvas');
-            if (qrCanvas) {
-              const link = document.createElement('a');
-              link.href = qrCanvas.toDataURL('image/png');
-              link.download = `qr_${user.username}.png`;
-              link.click();
-              // Regenerate original size after download
-              generateQR('qrcode', window.location.origin + '/' + user.username);
-            }
-          }, 500);
-        });
-    });
-  }
-});
+// Tailwind config (unchanged)
+tailwind.config = {
+  darkMode: 'class',
+  theme: {
+    extend: {
+      colors: {
+        primary: '#0EA5E9',
+        secondary: '#64748B',
+      },
+      borderRadius: {
+        none: '0px',
+        sm: '4px',
+        DEFAULT: '8px',
+        md: '12px',
+        lg: '16px',
+        xl: '20px',
+        '2xl': '24px',
+        '3xl': '32px',
+        full: '9999px',
+        button: '8px',
+      },
+    },
+  },
+};
