@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     qrImg.src = URL.createObjectURL(qrImageBlob);
 
     // Also save for downloads
-    canvas.className = "qr-final-canvas";
+    canvas.className = "qr-final-canvas rounded";
   }
 
   // Core QR rendering function
@@ -104,9 +104,17 @@ document.addEventListener('DOMContentLoaded', () => {
         // Initial QR render
         renderQRCode();
 
-        colorInput.addEventListener('input', renderQRCode);
-        shapeSelect.addEventListener('change', renderQRCode);
-        titleInput.addEventListener('input', renderQRCode);
+        const qrCustomForm = document.getElementById('qrCustomForm');
+if (qrCustomForm) {
+  qrCustomForm.addEventListener('submit', (e) => {
+    e.preventDefault(); // Prevent form reload
+    renderQRCode();
+  });
+}
+
+        // colorInput.addEventListener('input', renderQRCode);
+        // shapeSelect.addEventListener('change', renderQRCode);
+        // titleInput.addEventListener('input', renderQRCode);
 
         uploadBtn.addEventListener('click', () => {
           const fileInput = document.createElement('input');
@@ -147,7 +155,6 @@ document.addEventListener('DOMContentLoaded', () => {
           const historyRows = user.linkHistory.map(h => `<tr>
             <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">${new Date(h.createdAt).toLocaleDateString()}</td>
             <td class="px-6 py-4 text-sm text-gray-900 whitespace-nowrap dark:text-gray-500">${h.link}</td>
-            <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">1,234</td>
           </tr>`);
           const historyTableBody = document.getElementById('linkHistory');
           if (historyTableBody) historyTableBody.innerHTML = historyRows.join('');
