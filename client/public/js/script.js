@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderQRCodeWithTitle(qrImageBlob) {
     const qrSize = 200;
     const border = 8;
-    const titleHeight = titleInput.value.trim() !== "" ? 28 : 0;
+    const titleHeight = titleInput.value.trim() !== "" ? 30 : 0;
     const canvas = document.createElement('canvas');
     canvas.width = qrSize + border * 2;
     canvas.height = qrSize + border * 2 + titleHeight;
