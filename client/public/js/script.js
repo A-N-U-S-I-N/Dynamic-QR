@@ -14,10 +14,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // Helper: Render QR on custom canvas with title on top
   function renderQRCodeWithTitle(qrImageBlob) {
     const qrSize = 200;
+    const border = 8;
     const titleHeight = titleInput.value.trim() !== "" ? 28 : 0;
     const canvas = document.createElement('canvas');
-    canvas.width = qrSize;
-    canvas.height = qrSize + titleHeight;
+    canvas.width = qrSize + border * 2;
+    canvas.height = qrSize + border * 2 + titleHeight;
     const ctx = canvas.getContext('2d');
     // White background
     ctx.fillStyle = '#fff';
@@ -35,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Draw QR image after it loads
     const qrImg = new window.Image();
     qrImg.onload = () => {
-      ctx.drawImage(qrImg, 0, titleHeight, qrSize, qrSize);
+      ctx.drawImage(qrImg, border, titleHeight + border, qrSize, qrSize);
       qrContainer.appendChild(canvas);
     };
     qrImg.src = URL.createObjectURL(qrImageBlob);
