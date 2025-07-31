@@ -186,23 +186,7 @@ if (qrCustomForm) {
       });
   }
 
-  const themeToggle = document.getElementById('themeToggle');
-  const body = document.body;
-
-  if (localStorage.getItem('theme') === 'dark') {
-    body.classList.add('dark');
-    themeToggle.checked = true;
-  }
-
-  themeToggle.addEventListener('change', () => {
-    if (themeToggle.checked) {
-      body.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      body.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
-  });
+  
 
   const togglePassword = document.getElementById('togglePassword');
   const passwordInput = document.getElementById('password');
@@ -255,3 +239,226 @@ if (copyBtn && publicUrlInput) {
   });
 }
 
+document.addEventListener("DOMContentLoaded", function () {
+				const themeToggle = document.getElementById("themeToggle");
+				const themeDropdown = document.getElementById("themeDropdown");
+				const themeOptions = document.querySelectorAll(".theme-option");
+
+				let currentTheme = localStorage.getItem("theme") || "light";
+
+				function applyTheme(theme) {
+					if (
+						theme === "dark" ||
+						(theme === "auto" &&
+							window.matchMedia("(prefers-color-scheme: dark)")
+								.matches)
+					) {
+						document.documentElement.classList.add("dark");
+					} else {
+						document.documentElement.classList.remove("dark");
+					}
+
+					const icon = themeToggle.querySelector("i");
+					if (document.documentElement.classList.contains("dark")) {
+						icon.className =
+							"ri-moon-line text-xl text-gray-700 dark:text-gray-300";
+					} else {
+						icon.className =
+							"ri-sun-line text-xl text-gray-700 dark:text-gray-300";
+					}
+				}
+
+				applyTheme(currentTheme);
+
+				themeToggle.addEventListener("click", function () {
+					themeDropdown.classList.toggle("show");
+				});
+
+				document.addEventListener("click", function (e) {
+					if (
+						!themeToggle.contains(e.target) &&
+						!themeDropdown.contains(e.target)
+					) {
+						themeDropdown.classList.remove("show");
+					}
+				});
+
+				themeOptions.forEach((option) => {
+					option.addEventListener("click", function () {
+						const theme = this.dataset.theme;
+						currentTheme = theme;
+						localStorage.setItem("theme", theme);
+						applyTheme(theme);
+						themeDropdown.classList.remove("show");
+					});
+				});
+
+				if (window.matchMedia) {
+					window
+						.matchMedia("(prefers-color-scheme: dark)")
+						.addEventListener("change", function () {
+							if (currentTheme === "auto") {
+								applyTheme("auto");
+							}
+						});
+				}
+			});
+
+      document.addEventListener("DOMContentLoaded", function () {
+				const loginForm = document.getElementById("loginForm");
+				const signupForm = document.getElementById("signupForm");
+
+				loginForm.addEventListener("submit", function (e) {
+					const submitButton = this.querySelector(
+						'button[type="submit"]'
+					);
+					submitButton.textContent = "Signing In...";
+					submitButton.disabled = true;
+
+					
+				});
+
+				signupForm.addEventListener("submit", function (e) {
+					const submitButton = this.querySelector(
+						'button[type="submit"]'
+					);
+					submitButton.textContent = "Creating Account...";
+					submitButton.disabled = true;
+
+					
+				});
+			});
+
+      document.addEventListener("DOMContentLoaded", function () {
+				const loginEmail = document.getElementById("loginEmail");
+				const signupEmail = document.getElementById("signupEmail");
+				const loginEmailError =
+					document.getElementById("loginEmailError");
+				const signupEmailError =
+					document.getElementById("signupEmailError");
+
+				function validateEmail(email) {
+					const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+					return emailRegex.test(email);
+				}
+
+				loginEmail.addEventListener("blur", function () {
+					if (this.value && !validateEmail(this.value)) {
+						loginEmailError.classList.remove("hidden");
+						this.classList.add("border-red-500");
+					} else {
+						loginEmailError.classList.add("hidden");
+						this.classList.remove("border-red-500");
+					}
+				});
+
+				signupEmail.addEventListener("blur", function () {
+					if (this.value && !validateEmail(this.value)) {
+						signupEmailError.classList.remove("hidden");
+						this.classList.add("border-red-500");
+					} else {
+						signupEmailError.classList.add("hidden");
+						this.classList.remove("border-red-500");
+					}
+				});
+			});
+
+      document.addEventListener("DOMContentLoaded", function () {
+				const passwordInput = document.getElementById("signupPassword");
+				const strengthBar = document.getElementById("passwordStrength");
+				const strengthText = document.getElementById("strengthText");
+
+				passwordInput.addEventListener("input", function () {
+					const password = this.value;
+					const strength = calculatePasswordStrength(password);
+
+					strengthBar.className = "password-strength";
+
+					if (strength < 3) {
+						strengthBar.classList.add("strength-weak");
+						strengthText.textContent = "Weak";
+					} else if (strength < 5) {
+						strengthBar.classList.add("strength-medium");
+						strengthText.textContent = "Medium";
+					} else {
+						strengthBar.classList.add("strength-strong");
+						strengthText.textContent = "Strong";
+					}
+				});
+
+				function calculatePasswordStrength(password) {
+					let strength = 0;
+					if (password.length >= 8) strength++;
+					if (/[a-z]/.test(password)) strength++;
+					if (/[A-Z]/.test(password)) strength++;
+					if (/[0-9]/.test(password)) strength++;
+					if (/[^A-Za-z0-9]/.test(password)) strength++;
+					return strength;
+				}
+			});
+
+      indow.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const mode = urlParams.get('mode');
+
+    if (mode === 'signup') {
+      switchToSignup();
+    } else if (mode === 'login') {
+      switchToLogin();
+    }
+  });
+			let isSignupMode = false;
+
+			function switchToSignup() {
+				if (!isSignupMode) {
+					document
+						.getElementById("slideWrapper")
+						.classList.add("show-signup");
+					isSignupMode = true;
+				}
+			}
+
+			function switchToLogin() {
+				if (isSignupMode) {
+					document
+						.getElementById("slideWrapper")
+						.classList.remove("show-signup");
+					isSignupMode = false;
+				}
+			}
+
+			function togglePassword(inputId, button) {
+				const input = document.getElementById(inputId);
+				const icon = button.querySelector("i");
+
+				if (input.type === "password") {
+					input.type = "text";
+					icon.className = "ri-eye-off-line text-gray-400";
+				} else {
+					input.type = "password";
+					icon.className = "ri-eye-line text-gray-400";
+				}
+			}
+
+			function toggleCheckbox(inputId, element) {
+				const input = document.getElementById(inputId);
+				const icon = element.querySelector("i");
+
+				input.checked = !input.checked;
+
+				if (input.checked) {
+					element.classList.add("bg-primary", "border-primary");
+					element.classList.remove(
+						"border-gray-300",
+						"dark:border-gray-600"
+					);
+					icon.classList.remove("hidden");
+				} else {
+					element.classList.remove("bg-primary", "border-primary");
+					element.classList.add(
+						"border-gray-300",
+						"dark:border-gray-600"
+					);
+					icon.classList.add("hidden");
+				}
+			}
