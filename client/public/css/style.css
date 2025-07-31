@@ -14,7 +14,6 @@ body {
     box-shadow: 0 0 10px #ccc;
   }
   
-  /* Dark mode styles */
 body.dark {
   background: black;
   color: #eee;

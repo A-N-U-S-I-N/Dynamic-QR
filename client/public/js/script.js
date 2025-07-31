@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // Grab all customization inputs/buttons by id
   const colorInput = document.getElementById('qrColor');
   const shapeSelect = document.getElementById('qrShape');
   const titleInput = document.getElementById('qrTitle');
@@ -11,7 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
   let logoDataUrl = null;
   let qrData = "";
 
-  // Helper: Render QR on custom canvas with title on top
   function renderQRCodeWithTitle(qrImageBlob) {
     const qrSize = 200;
     const border = 8;
@@ -20,11 +18,9 @@ document.addEventListener('DOMContentLoaded', () => {
     canvas.width = qrSize + border * 2;
     canvas.height = qrSize + border * 2 + titleHeight;
     const ctx = canvas.getContext('2d');
-    // White background
     ctx.fillStyle = '#fff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Title text
     if (titleHeight > 0) {
       ctx.fillStyle = '#111';
       ctx.font = 'bold 18px sans-serif';
@@ -33,7 +29,6 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.fillText(titleInput.value.trim(), canvas.width / 2, 10);
     }
 
-    // Draw QR image after it loads
     const qrImg = new window.Image();
     qrImg.onload = () => {
       ctx.drawImage(qrImg, border, titleHeight + border, qrSize, qrSize);
@@ -41,11 +36,9 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     qrImg.src = URL.createObjectURL(qrImageBlob);
 
-    // Also save for downloads
     canvas.className = "qr-final-canvas rounded";
   }
 
-  // Core QR rendering function
   function renderQRCode() {
     qrContainer.innerHTML = '';
 
@@ -86,11 +79,9 @@ document.addEventListener('DOMContentLoaded', () => {
       },
     });
 
-    // Render QR code as image, then draw with title onto custom canvas
     qrCode.getRawData('png').then(renderQRCodeWithTitle);
   }
 
-  // User data and link logic
   if (document.getElementById('linkForm')) {
     fetch('/qr/user')
       .then(res => res.json())
@@ -102,20 +93,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (document.getElementById('publicPageUrl')) document.getElementById('publicPageUrl').value = qrData;
         if (document.getElementById('currentLink')) document.getElementById('currentLink').value = user.currentLink || qrData;
 
-        // Initial QR render
         renderQRCode();
 
         const qrCustomForm = document.getElementById('qrCustomForm');
 if (qrCustomForm) {
   qrCustomForm.addEventListener('submit', (e) => {
-    e.preventDefault(); // Prevent form reload
+    e.preventDefault(); 
     renderQRCode();
   });
 }
-
-        // colorInput.addEventListener('input', renderQRCode);
-        // shapeSelect.addEventListener('change', renderQRCode);
-        // titleInput.addEventListener('input', renderQRCode);
 
         uploadBtn.addEventListener('click', () => {
           const fileInput = document.createElement('input');
@@ -136,22 +122,30 @@ if (qrCustomForm) {
         });
 
         if (downloadBtn) {
-          downloadBtn.addEventListener('click', () => {
-            // Download custom canvas (includes title)
-            const qrCanvas = qrContainer.querySelector('canvas.qr-final-canvas');
-            if (qrCanvas) {
-              const url = qrCanvas.toDataURL("image/png");
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = (titleInput.value.trim() || 'qr_code') + '.png';
-              document.body.appendChild(a);
-              a.click();
-              document.body.removeChild(a);
-            }
-          });
-        }
+  downloadBtn.addEventListener('click', () => {
+    const qrCanvas = qrContainer.querySelector('canvas.qr-final-canvas');
+    if (qrCanvas) {
+      const inputHeight = parseInt(document.getElementById('qrHeight').value) || 200;
+      const inputWidth = parseInt(document.getElementById('qrWidth').value) || 200;
 
-        // Link history table
+      const resizedCanvas = document.createElement('canvas');
+      resizedCanvas.width = inputWidth;
+      resizedCanvas.height = inputHeight;
+      const ctx = resizedCanvas.getContext('2d');
+
+      ctx.drawImage(qrCanvas, 0, 0, inputWidth, inputHeight);
+
+      const url = resizedCanvas.toDataURL('image/png');
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = (titleInput.value.trim() || 'qr_code') + '.png';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+  });
+}
+
         if (user.linkHistory && Array.isArray(user.linkHistory)) {
           const historyRows = user.linkHistory.map(h => `<tr>
             <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">${new Date(h.createdAt).toLocaleDateString()}</td>
@@ -161,7 +155,6 @@ if (qrCustomForm) {
           if (historyTableBody) historyTableBody.innerHTML = historyRows.join('');
         }
 
-        // Link form submit
         const linkForm = document.getElementById('linkForm');
         if (linkForm) {
           linkForm.addEventListener('submit', (e) => {
@@ -175,7 +168,6 @@ if (qrCustomForm) {
           });
         }
 
-        // Delete account
         const deleteBtn = document.getElementById('deleteAccount');
         if (deleteBtn) {
           deleteBtn.addEventListener('click', () => {
@@ -197,7 +189,6 @@ if (qrCustomForm) {
   const themeToggle = document.getElementById('themeToggle');
   const body = document.body;
 
-  // Load saved theme from localStorage if present
   if (localStorage.getItem('theme') === 'dark') {
     body.classList.add('dark');
     themeToggle.checked = true;
@@ -213,9 +204,6 @@ if (qrCustomForm) {
     }
   });
 
-
-
-  // Password visibility toggle
   const togglePassword = document.getElementById('togglePassword');
   const passwordInput = document.getElementById('password');
   if (togglePassword && passwordInput) {
@@ -231,7 +219,6 @@ if (qrCustomForm) {
   }
 });
 
-// Tailwind config (unchanged)
 tailwind.config = {
   darkMode: 'class',
   theme: {
@@ -255,3 +242,16 @@ tailwind.config = {
     },
   },
 };
+
+const copyBtn = document.getElementById('copyPublicUrlBtn');
+const publicUrlInput = document.getElementById('publicPageUrl');
+
+if (copyBtn && publicUrlInput) {
+  copyBtn.addEventListener('click', () => {
+    navigator.clipboard.writeText(publicUrlInput.value).then(() => {
+      copyBtn.classList.add('text-primary');
+      setTimeout(() => copyBtn.classList.remove('text-primary'), 500);
+    });
+  });
+}
+
